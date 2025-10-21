@@ -10,11 +10,38 @@ const Review = () => {
   const [code, setCode] = useState("");
   const [language, setLanguage] = useState("javascript");
   const [isReviewing, setIsReviewing] = useState(false);
+  const [reviewResult, setReviewResult] = useState("");
 
-  const handleReview = () => {
+  const handleReview = async () => {
+    if (!code.trim()) return;
     setIsReviewing(true);
-    // Placeholder for AI review functionality
-    setTimeout(() => setIsReviewing(false), 2000);
+    setReviewResult("");
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/review-code`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ code, language }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to review code');
+      }
+
+      const data = await response.json();
+      setReviewResult(data.review);
+    } catch (error) {
+      console.error('Review error:', error);
+      setReviewResult('Error reviewing code. Please try again.');
+    } finally {
+      setIsReviewing(false);
+    }
   };
 
   return (
@@ -63,34 +90,18 @@ const Review = () => {
                 <CardDescription>AI analysis and suggestions</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {!code ? (
+                {!reviewResult && !code ? (
                   <p className="text-muted-foreground text-center py-8">
                     Submit code to see review results
                   </p>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="flex items-start gap-3 p-4 rounded-lg bg-green-500/10">
-                      <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5" />
-                      <div>
-                        <p className="font-medium">Good Practices</p>
-                        <p className="text-sm text-muted-foreground">AI review will appear here</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3 p-4 rounded-lg bg-yellow-500/10">
-                      <AlertCircle className="w-5 h-5 text-yellow-500 mt-0.5" />
-                      <div>
-                        <p className="font-medium">Potential Issues</p>
-                        <p className="text-sm text-muted-foreground">Warnings will appear here</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3 p-4 rounded-lg bg-blue-500/10">
-                      <Lightbulb className="w-5 h-5 text-blue-500 mt-0.5" />
-                      <div>
-                        <p className="font-medium">Suggestions</p>
-                        <p className="text-sm text-muted-foreground">Improvements will appear here</p>
-                      </div>
-                    </div>
+                ) : reviewResult ? (
+                  <div className="prose prose-sm max-w-none dark:prose-invert">
+                    <pre className="whitespace-pre-wrap text-sm">{reviewResult}</pre>
                   </div>
+                ) : (
+                  <p className="text-muted-foreground text-center py-8">
+                    Click "Review Code" to get AI feedback
+                  </p>
                 )}
               </CardContent>
             </Card>

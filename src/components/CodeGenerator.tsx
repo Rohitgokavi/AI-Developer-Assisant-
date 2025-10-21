@@ -33,15 +33,39 @@ export const CodeGenerator = () => {
     }
 
     setIsGenerating(true);
-    // TODO: Integrate with AI API
-    setTimeout(() => {
-      setGeneratedCode(`# Example ${language} code based on your prompt\n# "${prompt}"\n\ndef example_function():\n    print("This is AI-generated code")\n    # More code will be generated here...`);
-      setIsGenerating(false);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-code`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ prompt, language }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to generate code');
+      }
+
+      const data = await response.json();
+      setGeneratedCode(data.output);
       toast({
         title: "Code Generated!",
         description: "Your code is ready to use",
       });
-    }, 2000);
+    } catch (error) {
+      console.error('Generation error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate code. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleCopy = () => {
