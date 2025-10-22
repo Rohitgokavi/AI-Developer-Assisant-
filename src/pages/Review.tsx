@@ -1,5 +1,5 @@
 import { Navigation } from "@/components/Navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -11,11 +11,34 @@ const Review = () => {
   const [language, setLanguage] = useState("javascript");
   const [isReviewing, setIsReviewing] = useState(false);
   const [reviewResult, setReviewResult] = useState("");
+  const [displayedText, setDisplayedText] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+
+  useEffect(() => {
+    if (reviewResult && isTyping) {
+      let i = 0;
+      const plainText = reviewResult;
+      setDisplayedText("");
+
+      const type = () => {
+        if (i < plainText.length) {
+          setDisplayedText((prev) => prev + plainText[i]);
+          i++;
+          setTimeout(type, 15);
+        } else {
+          setIsTyping(false);
+        }
+      };
+      type();
+    }
+  }, [reviewResult, isTyping]);
 
   const handleReview = async () => {
     if (!code.trim()) return;
     setIsReviewing(true);
     setReviewResult("");
+    setDisplayedText("");
+    setIsTyping(false);
 
     try {
       const response = await fetch(
@@ -36,6 +59,7 @@ const Review = () => {
 
       const data = await response.json();
       setReviewResult(data.review);
+      setIsTyping(true);
     } catch (error) {
       console.error('Review error:', error);
       setReviewResult('Error reviewing code. Please try again.');
@@ -90,19 +114,28 @@ const Review = () => {
                 <CardDescription>AI analysis and suggestions</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {!reviewResult && !code ? (
+                {isReviewing && (
+                  <p className="text-primary text-center py-8 animate-pulse">
+                    🧩 Analyzing your code...
+                  </p>
+                )}
+                {!reviewResult && !code && !isReviewing ? (
                   <p className="text-muted-foreground text-center py-8">
                     Submit code to see review results
                   </p>
-                ) : reviewResult ? (
+                ) : displayedText ? (
+                  <div className="prose prose-sm max-w-none dark:prose-invert">
+                    <pre className="whitespace-pre-wrap text-sm">{displayedText}</pre>
+                  </div>
+                ) : reviewResult && !isTyping && !isReviewing ? (
                   <div className="prose prose-sm max-w-none dark:prose-invert">
                     <pre className="whitespace-pre-wrap text-sm">{reviewResult}</pre>
                   </div>
-                ) : (
+                ) : !isReviewing && !reviewResult && code ? (
                   <p className="text-muted-foreground text-center py-8">
                     Click "Review Code" to get AI feedback
                   </p>
-                )}
+                ) : null}
               </CardContent>
             </Card>
           </div>

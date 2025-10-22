@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -19,8 +19,29 @@ export const CodeGenerator = () => {
   const [prompt, setPrompt] = useState("");
   const [language, setLanguage] = useState("python");
   const [generatedCode, setGeneratedCode] = useState("// Your generated code will appear here...");
+  const [displayedCode, setDisplayedCode] = useState("// Your generated code will appear here...");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (generatedCode !== "// Your generated code will appear here..." && isTyping) {
+      let i = 0;
+      const plainText = generatedCode;
+      setDisplayedCode("");
+
+      const type = () => {
+        if (i < plainText.length) {
+          setDisplayedCode((prev) => prev + plainText[i]);
+          i++;
+          setTimeout(type, 10);
+        } else {
+          setIsTyping(false);
+        }
+      };
+      type();
+    }
+  }, [generatedCode, isTyping]);
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
@@ -33,6 +54,7 @@ export const CodeGenerator = () => {
     }
 
     setIsGenerating(true);
+    setIsTyping(false);
     try {
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-code`,
@@ -52,6 +74,7 @@ export const CodeGenerator = () => {
 
       const data = await response.json();
       setGeneratedCode(data.output);
+      setIsTyping(true);
       toast({
         title: "Code Generated!",
         description: "Your code is ready to use",
@@ -159,11 +182,16 @@ export const CodeGenerator = () => {
               </div>
             </div>
 
+            {isGenerating && (
+              <p className="text-primary text-center py-4 animate-pulse">
+                🤖 AI is generating your code...
+              </p>
+            )}
             <div className="rounded-lg overflow-hidden border border-border">
               <Editor
                 height="400px"
                 language={language}
-                value={generatedCode}
+                value={displayedCode}
                 theme="vs-dark"
                 options={{
                   minimap: { enabled: false },
