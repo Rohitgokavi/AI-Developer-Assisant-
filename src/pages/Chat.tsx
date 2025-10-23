@@ -1,11 +1,16 @@
 import { Navigation } from "@/components/Navigation";
 import { useState, useRef, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Copy, Check, Sparkles } from "lucide-react";
+import { Send, Copy, Check, Sparkles, History, X, LogIn, Plus, Play } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { User } from "@supabase/supabase-js";
+import { UserProfileDropdown } from "@/components/UserProfileDropdown";
+import { useChatHistory, ChatSession } from "@/hooks/useChatHistory";
+import { Textarea } from "@/components/ui/textarea";
 
 type Message = {
   role: "user" | "assistant";
@@ -13,13 +18,45 @@ type Message = {
 };
 
 const Chat = () => {
-  const [messages, setMessages] = useState<Message[]>([
-    { role: "assistant", content: "👋 Hello! I'm your AI coding assistant. I can help you with code generation, debugging, and programming questions. How can I assist you today?" }
-  ]);
+  const [user, setUser] = useState<User | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
+  const [codeToExecute, setCodeToExecute] = useState("");
+  const [codeLanguage, setCodeLanguage] = useState("python");
+  const [isExecuting, setIsExecuting] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { history, saveSession, loadSession, deleteSession, newSession } = useChatHistory(user);
+
+  // Listen to auth changes
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      if (!session?.user) {
+        setMessages([
+          { role: "assistant", content: "👋 Please sign in to start chatting with your AI coding assistant!" }
+        ]);
+      } else {
+        setMessages([
+          { role: "assistant", content: "👋 Hello! I'm your AI coding assistant. I can help you with code generation, debugging, and programming questions. How can I assist you today?" }
+        ]);
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      if (!session?.user) {
+        setMessages([
+          { role: "assistant", content: "👋 Please sign in to start chatting with your AI coding assistant!" }
+        ]);
+        newSession();
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -119,11 +156,53 @@ const Chat = () => {
     });
   };
 
+  const handleSignIn = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: window.location.origin + "/chat",
+      },
+    });
+
+    if (error) {
+      toast.error("Failed to sign in");
+    }
+  };
+
+  const executeCode = async () => {
+    if (!codeToExecute.trim()) return;
+
+    setIsExecuting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("execute-code", {
+        body: { code: codeToExecute, language: codeLanguage },
+      });
+
+      if (error) throw error;
+
+      const outputMessage = {
+        role: "assistant" as const,
+        content: `🚀 **Code Executed Successfully!**\n\n🖥️ **Output:**\n\`\`\`\n${data.output}\n\`\`\``,
+      };
+
+      const updatedMessages = [...messages, outputMessage];
+      setMessages(updatedMessages);
+      await saveSession(updatedMessages);
+      setCodeToExecute("");
+    } catch (error) {
+      toast.error("Failed to execute code");
+      console.error("Error executing code:", error);
+    } finally {
+      setIsExecuting(false);
+    }
+  };
+
   const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || isLoading || !user) return;
 
     const userMessage = { role: "user" as const, content: input };
-    setMessages((prev) => [...prev, userMessage]);
+    const updatedMessages = [...messages, userMessage];
+    setMessages(updatedMessages);
     setInput("");
     setIsLoading(true);
 
@@ -137,9 +216,9 @@ const Chat = () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify({ messages: [...messages, userMessage] }),
+          body: JSON.stringify({ messages: updatedMessages }),
         }
       );
 
@@ -193,6 +272,10 @@ const Chat = () => {
           }
         }
       }
+
+      // Save session after successful response
+      const finalMessages = [...updatedMessages, { role: "assistant" as const, content: assistantMessage }];
+      await saveSession(finalMessages);
     } catch (error) {
       console.error("Error:", error);
       toast.error("Failed to send message");
@@ -202,16 +285,51 @@ const Chat = () => {
     setIsLoading(false);
   };
 
+  const handleLoadSession = (session: ChatSession) => {
+    const loadedMessages = loadSession(session) as Message[];
+    setMessages(loadedMessages);
+    setShowHistory(false);
+  };
+
+  const handleNewChat = () => {
+    newSession();
+    setMessages([
+      { role: "assistant", content: "👋 Hello! I'm your AI coding assistant. How can I help you today?" }
+    ]);
+  };
+
   return (
     <div className="flex min-h-screen bg-background">
       <Navigation />
       <main className="flex-1 ml-64 p-8">
         <div className="max-w-5xl mx-auto h-[calc(100vh-4rem)]">
-          <div className="flex items-center gap-3 mb-2">
-            <Sparkles className="w-8 h-8 text-primary animate-pulse-glow" />
-            <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              AI Developer Assistant
-            </h1>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <Sparkles className="w-8 h-8 text-primary animate-pulse-glow" />
+              <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                AI Developer Assistant
+              </h1>
+            </div>
+            <div className="flex items-center gap-2">
+              {user ? (
+                <>
+                  <Button onClick={handleNewChat} variant="outline" size="sm">
+                    <Plus className="w-4 h-4 mr-2" />
+                    New Chat
+                  </Button>
+                  <Button onClick={() => setShowHistory(true)} variant="outline" size="sm">
+                    <History className="w-4 h-4 mr-2" />
+                    History
+                  </Button>
+                  <UserProfileDropdown user={user} onShowHistory={() => setShowHistory(true)} />
+                </>
+              ) : (
+                <Button onClick={handleSignIn} className="bg-gradient-primary">
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Sign in with Google
+                </Button>
+              )}
+            </div>
           </div>
           <p className="text-muted-foreground mb-6">
             Your intelligent coding companion for generation, debugging, and learning
@@ -258,30 +376,121 @@ const Chat = () => {
                   <div ref={messagesEndRef} />
                 </div>
               </ScrollArea>
-              <div className="border-t border-border/50 p-4 bg-card/80 backdrop-blur-sm">
+              <div className="border-t border-border/50 p-4 bg-card/80 backdrop-blur-sm space-y-3">
+                {user && (
+                  <div className="border border-border/50 rounded-lg p-3 bg-background/30">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium">Code Execution</span>
+                      <select
+                        value={codeLanguage}
+                        onChange={(e) => setCodeLanguage(e.target.value)}
+                        className="text-xs bg-background border border-border rounded px-2 py-1"
+                      >
+                        <option value="python">Python</option>
+                        <option value="javascript">JavaScript</option>
+                      </select>
+                    </div>
+                    <Textarea
+                      value={codeToExecute}
+                      onChange={(e) => setCodeToExecute(e.target.value)}
+                      placeholder="Paste code to execute..."
+                      className="min-h-[60px] text-sm font-mono bg-background/50"
+                    />
+                    <Button
+                      onClick={executeCode}
+                      disabled={isExecuting || !codeToExecute.trim()}
+                      size="sm"
+                      className="mt-2 w-full"
+                      variant="outline"
+                    >
+                      <Play className="w-3 h-3 mr-2" />
+                      {isExecuting ? "Executing..." : "Run Code"}
+                    </Button>
+                  </div>
+                )}
                 <div className="flex gap-2">
                   <Input
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-                    placeholder="Ask me anything about code..."
-                    disabled={isLoading}
+                    placeholder={user ? "Ask me anything about code..." : "Please sign in to chat..."}
+                    disabled={isLoading || !user}
                     className="bg-background/50 border-border/50 focus:border-primary transition-colors"
                   />
                   <Button 
                     onClick={handleSend} 
-                    disabled={isLoading || !input.trim()}
+                    disabled={isLoading || !input.trim() || !user}
                     className="bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow-primary"
                   >
                     <Send className="w-4 h-4" />
                   </Button>
                 </div>
-                <p className="text-xs text-muted-foreground mt-2 text-center">
+                <p className="text-xs text-muted-foreground text-center">
                   Press Enter to send • Shift + Enter for new line
                 </p>
               </div>
             </CardContent>
           </Card>
+
+          {/* History Panel */}
+          {showHistory && (
+            <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+              <Card className="w-full max-w-2xl max-h-[80vh] flex flex-col border-border">
+                <CardContent className="p-6 flex flex-col h-full">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-2xl font-bold flex items-center gap-2">
+                      <History className="w-6 h-6" />
+                      Chat History
+                    </h2>
+                    <Button onClick={() => setShowHistory(false)} variant="ghost" size="sm">
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  <ScrollArea className="flex-1">
+                    {history.length === 0 ? (
+                      <div className="text-center text-muted-foreground py-8">
+                        No chat history yet. Start a conversation to save it!
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {history.map((session) => (
+                          <div
+                            key={session.id}
+                            className="border border-border rounded-lg p-3 hover:bg-muted/50 cursor-pointer transition-colors group"
+                            onClick={() => handleLoadSession(session)}
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium truncate">{session.title}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {new Date(session.created_at).toLocaleDateString()} at{" "}
+                                  {new Date(session.created_at).toLocaleTimeString()}
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {session.messages.length} messages
+                                </p>
+                              </div>
+                              <Button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteSession(session.id);
+                                }}
+                                variant="ghost"
+                                size="sm"
+                                className="opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </ScrollArea>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
       </main>
     </div>

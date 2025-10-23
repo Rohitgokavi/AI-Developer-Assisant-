@@ -1,1 +1,13 @@
 project_id = "wvxliykqfpvlpsmkmlwr"
+
+[functions.chat-assistant]
+verify_jwt = true
+
+[functions.execute-code]
+verify_jwt = true
+
+[functions.generate-code]
+verify_jwt = true
+
+[functions.review-code]
+verify_jwt = true
