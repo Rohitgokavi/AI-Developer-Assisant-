@@ -100,11 +100,11 @@ export const CodeGenerator = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Input Section */}
-        <div className="space-y-4">
-          <div className="bg-card p-6 rounded-xl border border-border shadow-lg">
+        <div className="space-y-4 animate-slide-up">
+          <div className="bg-card p-6 rounded-xl border border-border shadow-lg transition-all duration-300 hover:shadow-glow-primary hover:border-primary/50">
             <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
               <Sparkles className="w-6 h-6 text-primary" />
               Describe Your Code
@@ -140,7 +140,7 @@ export const CodeGenerator = () => {
               <Button
                 onClick={handleGenerate}
                 disabled={isGenerating}
-                className="w-full bg-gradient-primary hover:shadow-glow-primary transition-all duration-300 text-background font-semibold"
+                className="w-full bg-gradient-primary hover:shadow-glow-primary transition-all duration-300 hover:scale-105 text-background font-semibold"
                 size="lg"
               >
                 {isGenerating ? (

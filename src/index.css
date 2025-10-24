@@ -8,29 +8,75 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Deep space background */
+    /* Light theme */
+    --background: 0 0% 100%;
+    --foreground: 230 35% 7%;
+
+    --card: 0 0% 98%;
+    --card-foreground: 230 35% 7%;
+
+    --popover: 0 0% 98%;
+    --popover-foreground: 230 35% 7%;
+
+    --primary: 191 100% 40%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 270 60% 55%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 0 0% 96%;
+    --muted-foreground: 230 20% 40%;
+
+    --accent: 270 60% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 191 100% 40%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 230 35% 7%;
+    --sidebar-primary: 191 100% 40%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 95%;
+    --sidebar-accent-foreground: 230 35% 7%;
+    --sidebar-border: 0 0% 90%;
+    --sidebar-ring: 191 100% 40%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(191 100% 40%) 0%, hsl(270 60% 55%) 100%);
+    --gradient-hero: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(0 0% 98%) 50%, hsl(0 0% 100%) 100%);
+    
+    --glow-primary: 0 0 20px hsl(191 100% 40% / 0.3);
+    --glow-secondary: 0 0 20px hsl(270 60% 55% / 0.3);
+    
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .dark {
+    /* Dark theme */
     --background: 230 35% 7%;
     --foreground: 213 31% 91%;
 
-    /* Card with subtle elevation */
     --card: 229 25% 11%;
     --card-foreground: 213 31% 91%;
 
     --popover: 229 25% 11%;
     --popover-foreground: 213 31% 91%;
 
-    /* Neon cyan primary */
     --primary: 191 100% 50%;
     --primary-foreground: 230 35% 7%;
 
-    /* Purple accent */
     --secondary: 270 70% 65%;
     --secondary-foreground: 230 35% 7%;
 
     --muted: 229 20% 20%;
     --muted-foreground: 213 20% 60%;
 
-    /* Electric purple accent */
     --accent: 270 70% 65%;
     --accent-foreground: 230 35% 7%;
 
@@ -41,9 +87,6 @@ All colors MUST be HSL.
     --input: 229 20% 18%;
     --ring: 191 100% 50%;
 
-    --radius: 0.75rem;
-
-    /* Sidebar styling */
     --sidebar-background: 230 30% 9%;
     --sidebar-foreground: 213 31% 91%;
     --sidebar-primary: 191 100% 50%;
@@ -53,16 +96,11 @@ All colors MUST be HSL.
     --sidebar-border: 229 20% 15%;
     --sidebar-ring: 191 100% 50%;
 
-    /* Custom gradient tokens */
     --gradient-primary: linear-gradient(135deg, hsl(191 100% 50%) 0%, hsl(270 70% 65%) 100%);
     --gradient-hero: linear-gradient(180deg, hsl(230 35% 7%) 0%, hsl(229 30% 12%) 50%, hsl(230 35% 7%) 100%);
     
-    /* Glow effects */
     --glow-primary: 0 0 20px hsl(191 100% 50% / 0.5);
     --glow-secondary: 0 0 20px hsl(270 70% 65% / 0.5);
-    
-    /* Animation tokens */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
 

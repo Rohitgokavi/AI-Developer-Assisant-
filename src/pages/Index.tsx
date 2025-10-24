@@ -6,7 +6,7 @@ const Index = () => {
   return (
     <div className="flex min-h-screen bg-background">
       <Navigation />
-      <main className="flex-1 ml-64">
+      <main className="flex-1 ml-64 animate-fade-in">
         <Hero />
         <div className="container py-12">
           <CodeGenerator />
