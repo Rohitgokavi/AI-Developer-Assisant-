@@ -1,5 +1,11 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+
+const generateCodeSchema = z.object({
+  prompt: z.string().min(1, "Prompt cannot be empty").max(5000, "Prompt too long (max 5000 characters)"),
+  language: z.string().min(1, "Language is required").max(50, "Language name too long")
+});
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,7 +18,18 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt, language } = await req.json();
+    const body = await req.json();
+    
+    // Validate input
+    const validationResult = generateCodeSchema.safeParse(body);
+    if (!validationResult.success) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid input: ' + validationResult.error.errors[0].message }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    const { prompt, language } = validationResult.data;
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 
     if (!LOVABLE_API_KEY) {
