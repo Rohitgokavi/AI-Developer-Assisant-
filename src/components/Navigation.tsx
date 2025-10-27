@@ -1,4 +1,4 @@
-import { Code2, Sparkles, History, MessageSquare, LogIn } from "lucide-react";
+import { Code2, Sparkles, History, MessageSquare } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -8,7 +8,6 @@ const navItems = [
   { icon: Sparkles, label: "Code Review", path: "/review" },
   { icon: MessageSquare, label: "AI Assistant", path: "/chat" },
   { icon: History, label: "History", path: "/history" },
-  { icon: LogIn, label: "Login", path: "/auth" },
 ];
 
 export const Navigation = () => {
