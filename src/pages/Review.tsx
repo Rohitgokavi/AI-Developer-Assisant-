@@ -116,7 +116,7 @@ const Review = () => {
               <CardContent className="space-y-4">
                 {isReviewing && (
                   <p className="text-primary text-center py-8 animate-pulse">
-                    🧩 Analyzing your code...
+                    🧠 Deep AI Review in Progress — Analyzing quality and efficiency...
                   </p>
                 )}
                 {!reviewResult && !code && !isReviewing ? (

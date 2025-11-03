@@ -76,8 +76,8 @@ export const CodeGenerator = () => {
       setGeneratedCode(data.output);
       setIsTyping(true);
       toast({
-        title: "Code Generated!",
-        description: "Your code is ready to use",
+        title: "⚡ Smart Code Generation Complete",
+        description: "Your solution is now optimized and ready to use!",
       });
     } catch (error) {
       console.error('Generation error:', error);
