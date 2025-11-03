@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import codeIcon from "@/assets/code-icon.png";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -90,31 +91,41 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-8 animate-fade-in">
-        {/* Logo and Title */}
-        <div className="text-center space-y-6">
-          <div className="flex justify-center">
-            <div className="relative">
-              <img
-                src={codeIcon}
-                alt="AI Developer Assistant"
-                className="w-32 h-32 animate-pulse-glow"
-              />
+    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Theme Toggle */}
+      <div className="absolute top-6 right-6 z-10">
+        <ThemeToggle />
+      </div>
+
+      {/* Glassmorphic Card with Slide-in Animation */}
+      <div className="w-full max-w-md space-y-8 animate-in slide-in-from-bottom-10 duration-700 ease-out"
+           style={{ backdropFilter: 'blur(16px)' }}>
+        {/* Glassmorphic Container */}
+        <div className="bg-card/40 backdrop-blur-xl border border-border/50 rounded-3xl p-8 shadow-2xl">
+          {/* Logo and Title */}
+          <div className="text-center space-y-6 mb-8">
+            <div className="flex justify-center">
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl animate-pulse" />
+                <img
+                  src={codeIcon}
+                  alt="AI Developer Assistant"
+                  className="w-28 h-28 relative z-10 drop-shadow-2xl"
+                />
+              </div>
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold text-foreground bg-clip-text">
+                AI Developer Assistant
+              </h1>
+              <p className="text-muted-foreground text-lg mt-2">
+                {isLogin ? "Welcome back! Login to continue" : "Create your account to get started"}
+              </p>
             </div>
           </div>
-          <div>
-            <h1 className="text-4xl font-bold text-foreground">
-              AI Developer Assistant
-            </h1>
-            <p className="text-muted-foreground text-lg mt-2">
-              {isLogin ? "Login to your account" : "Create your account"}
-            </p>
-          </div>
-        </div>
 
-        {/* Form */}
-        <form onSubmit={handleAuth} className="space-y-6">
+          {/* Form */}
+          <form onSubmit={handleAuth} className="space-y-6">
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-foreground">
@@ -127,7 +138,7 @@ const Auth = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="bg-card/50 border-border text-foreground placeholder:text-muted-foreground"
+                className="bg-background/50 backdrop-blur-sm border-border text-foreground placeholder:text-muted-foreground focus:bg-background/70 transition-all"
               />
             </div>
 
@@ -143,7 +154,7 @@ const Auth = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="bg-card/50 border-border text-foreground placeholder:text-muted-foreground pr-10"
+                  className="bg-background/50 backdrop-blur-sm border-border text-foreground placeholder:text-muted-foreground pr-10 focus:bg-background/70 transition-all"
                 />
                 <button
                   type="button"
@@ -167,13 +178,13 @@ const Auth = () => {
             )}
           </div>
 
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-full h-12 text-base font-semibold bg-gradient-to-r from-primary to-secondary hover:opacity-90 transition-opacity"
-          >
-            {loading ? "Please wait..." : isLogin ? "Log in" : "Sign up"}
-          </Button>
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full h-12 text-base font-semibold bg-gradient-to-r from-primary to-secondary hover:opacity-90 hover:scale-[1.02] transition-all shadow-lg hover:shadow-xl"
+            >
+              {loading ? "Please wait..." : isLogin ? "Log in" : "Sign up"}
+            </Button>
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
@@ -184,13 +195,13 @@ const Auth = () => {
             </div>
           </div>
 
-          <Button
-            type="button"
-            onClick={handleGoogleSignIn}
-            disabled={loading}
-            variant="outline"
-            className="w-full h-12 text-base font-semibold hover:bg-accent transition-colors"
-          >
+            <Button
+              type="button"
+              onClick={handleGoogleSignIn}
+              disabled={loading}
+              variant="outline"
+              className="w-full h-12 text-base font-semibold bg-background/50 backdrop-blur-sm hover:bg-accent hover:scale-[1.02] transition-all border-border"
+            >
             <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
               <path
                 fill="currentColor"
@@ -223,6 +234,7 @@ const Auth = () => {
             </button>
           </div>
         </form>
+        </div>
       </div>
     </div>
   );
