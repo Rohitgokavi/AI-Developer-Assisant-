@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Copy, Check, Sparkles, History, X, LogIn, Plus, Play } from "lucide-react";
+import { Send, Copy, Check, Sparkles, History, X, LogIn, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
@@ -24,14 +24,7 @@ const Chat = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [showHistory, setShowHistory] = useState(false);
-  const [codeToExecute, setCodeToExecute] = useState("");
-  const [codeLanguage, setCodeLanguage] = useState("python");
-  const [isExecuting, setIsExecuting] = useState(false);
-  const [errorAnalysis, setErrorAnalysis] = useState<string>("");
-  const [fixedCode, setFixedCode] = useState<string>("");
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiMode, setAiMode] = useState<'developer' | 'tutor' | 'reviewer'>('developer');
-  const [explainCode, setExplainCode] = useState<string>("");
   const [isExplaining, setIsExplaining] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { history, saveSession, loadSession, deleteSession, newSession } = useChatHistory(user);
@@ -186,91 +179,6 @@ const Chat = () => {
     }
   };
 
-  const analyzeError = async (code: string, errorOutput: string, language: string) => {
-    setIsAnalyzing(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("analyze-error", {
-        body: { code, error: errorOutput, language },
-      });
-
-      if (error) throw error;
-
-      setErrorAnalysis(data.analysis);
-      setFixedCode(data.fixedCode);
-      
-      const analysisMessage = {
-        role: "assistant" as const,
-        content: `🧠 **Error Analysis:**\n\n${data.analysis}`,
-      };
-      
-      const updatedMessages = [...messages, analysisMessage];
-      setMessages(updatedMessages);
-      await saveSession(updatedMessages);
-    } catch (error) {
-      toast.error("Failed to analyze error");
-      console.error("Error analyzing:", error);
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
-
-  const applyFix = () => {
-    if (fixedCode) {
-      setCodeToExecute(fixedCode);
-      setFixedCode("");
-      setErrorAnalysis("");
-      toast.success("Fix applied! You can now run the corrected code.");
-    }
-  };
-
-  const executeCode = async () => {
-    if (!codeToExecute.trim()) return;
-
-    setIsExecuting(true);
-    setErrorAnalysis("");
-    setFixedCode("");
-    
-    try {
-      const { data, error } = await supabase.functions.invoke("execute-code", {
-        body: { code: codeToExecute, language: codeLanguage },
-      });
-
-      if (error) throw error;
-
-      // Check if output contains common error indicators
-      const output = data.output || "";
-      const hasError = output.toLowerCase().includes("error") || 
-                      output.toLowerCase().includes("exception") ||
-                      output.toLowerCase().includes("traceback");
-
-      if (hasError) {
-        const errorMessage = {
-          role: "assistant" as const,
-          content: `❌ **Execution Error:**\n\n\`\`\`\n${output}\n\`\`\`\n\n🧠 Analyzing error...`,
-        };
-        const updatedMessages = [...messages, errorMessage];
-        setMessages(updatedMessages);
-        await saveSession(updatedMessages);
-        
-        // Analyze the error with AI
-        await analyzeError(codeToExecute, output, codeLanguage);
-      } else {
-        const outputMessage = {
-          role: "assistant" as const,
-          content: `🚀 **Code Executed Successfully!**\n\n🖥️ **Output:**\n\`\`\`\n${output}\n\`\`\``,
-        };
-        const updatedMessages = [...messages, outputMessage];
-        setMessages(updatedMessages);
-        await saveSession(updatedMessages);
-        setCodeToExecute("");
-      }
-    } catch (error) {
-      toast.error("Failed to execute code");
-      console.error("Error executing code:", error);
-    } finally {
-      setIsExecuting(false);
-    }
-  };
 
   const handleSend = async () => {
     if (!input.trim() || isLoading || !user) return;
@@ -548,55 +456,6 @@ const Chat = () => {
                 </div>
               </ScrollArea>
               <div className="border-t border-border/50 p-4 bg-card/80 backdrop-blur-sm space-y-3">
-                {user && (
-                  <div className="border border-border/50 rounded-lg p-3 bg-background/30">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium">Code Execution</span>
-                      <select
-                        value={codeLanguage}
-                        onChange={(e) => setCodeLanguage(e.target.value)}
-                        className="text-xs bg-background border border-border rounded px-2 py-1"
-                      >
-                        <option value="python">Python</option>
-                        <option value="javascript">JavaScript</option>
-                      </select>
-                    </div>
-                    <Textarea
-                      value={codeToExecute}
-                      onChange={(e) => setCodeToExecute(e.target.value)}
-                      placeholder="Paste code to execute..."
-                      className="min-h-[60px] text-sm font-mono bg-background/50"
-                    />
-                    <div className="flex gap-2 mt-2">
-                      <Button
-                        onClick={executeCode}
-                        disabled={isExecuting || isAnalyzing || !codeToExecute.trim()}
-                        size="sm"
-                        className="flex-1"
-                        variant="outline"
-                      >
-                        <Play className="w-3 h-3 mr-2" />
-                        {isExecuting ? "Executing..." : "Run Code"}
-                      </Button>
-                      {fixedCode && (
-                        <Button
-                          onClick={applyFix}
-                          size="sm"
-                          className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-                        >
-                          <Check className="w-3 h-3 mr-2" />
-                          Apply Fix
-                        </Button>
-                      )}
-                    </div>
-                    {isAnalyzing && (
-                      <div className="mt-2 text-sm text-muted-foreground flex items-center gap-2">
-                        <div className="w-2 h-2 bg-primary rounded-full animate-bounce" />
-                        AI analyzing error...
-                      </div>
-                    )}
-                  </div>
-                )}
                 <div className="flex gap-2">
                   <Input
                     value={input}
