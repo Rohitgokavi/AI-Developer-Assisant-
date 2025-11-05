@@ -30,6 +30,9 @@ const Chat = () => {
   const [errorAnalysis, setErrorAnalysis] = useState<string>("");
   const [fixedCode, setFixedCode] = useState<string>("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [aiMode, setAiMode] = useState<'developer' | 'tutor' | 'reviewer'>('developer');
+  const [explainCode, setExplainCode] = useState<string>("");
+  const [isExplaining, setIsExplaining] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { history, saveSession, loadSession, deleteSession, newSession } = useChatHistory(user);
 
@@ -102,24 +105,35 @@ const Chat = () => {
         <div key={`code-${match.index}`} className="relative my-3 group">
           <div className="flex items-center justify-between bg-muted/50 px-4 py-2 rounded-t-lg border-b border-border">
             <span className="text-xs text-muted-foreground font-mono">{language}</span>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 text-xs gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
-              onClick={() => copyToClipboard(code, blockIndex)}
-            >
-              {copiedIndex === blockIndex ? (
-                <>
-                  <Check className="h-3 w-3" />
-                  Copied
-                </>
-              ) : (
-                <>
-                  <Copy className="h-3 w-3" />
-                  Copy
-                </>
-              )}
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={() => handleExplainCode(code)}
+              >
+                <Sparkles className="h-3 w-3" />
+                Explain
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={() => copyToClipboard(code, blockIndex)}
+              >
+                {copiedIndex === blockIndex ? (
+                  <>
+                    <Check className="h-3 w-3" />
+                    Copied
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-3 w-3" />
+                    Copy
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
           <pre className="bg-muted p-4 rounded-b-lg overflow-x-auto">
             <code className="text-sm font-mono text-primary">{code}</code>
@@ -279,7 +293,7 @@ const Chat = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify({ messages: updatedMessages }),
+          body: JSON.stringify({ messages: updatedMessages, mode: aiMode }),
         }
       );
 
@@ -359,6 +373,86 @@ const Chat = () => {
     ]);
   };
 
+  const handleExplainCode = async (code: string) => {
+    if (!user) return;
+    
+    setIsExplaining(true);
+    const explainMessage = { role: "user" as const, content: `Please explain this code in detail:\n\`\`\`\n${code}\n\`\`\`` };
+    const tempMessages = [...messages, explainMessage];
+    setMessages(tempMessages);
+
+    let assistantMessage = "";
+    setMessages((prev) => [...prev, { role: "assistant" as const, content: "" }]);
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-assistant`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ messages: tempMessages, mode: 'tutor' }),
+        }
+      );
+
+      if (!response.ok || !response.body) {
+        toast.error("Failed to explain code");
+        setMessages((prev) => prev.slice(0, -2));
+        setIsExplaining(false);
+        return;
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            const data = line.slice(6);
+            if (data === "[DONE]") continue;
+
+            try {
+              const parsed = JSON.parse(data);
+              const content = parsed.choices?.[0]?.delta?.content;
+              if (content) {
+                assistantMessage += content;
+                setMessages((prev) => {
+                  const newMessages = [...prev];
+                  newMessages[newMessages.length - 1] = {
+                    role: "assistant",
+                    content: assistantMessage,
+                  };
+                  return newMessages;
+                });
+              }
+            } catch (e) {
+              console.error("Error parsing SSE data:", e);
+            }
+          }
+        }
+      }
+
+      const finalMessages = [...tempMessages, { role: "assistant" as const, content: assistantMessage }];
+      await saveSession(finalMessages);
+    } catch (error) {
+      console.error("Error explaining code:", error);
+      toast.error("Failed to explain code");
+      setMessages((prev) => prev.slice(0, -2));
+    }
+
+    setIsExplaining(false);
+  };
+
   return (
     <div className="flex min-h-screen bg-background">
       <Navigation />
@@ -392,9 +486,25 @@ const Chat = () => {
               )}
             </div>
           </div>
-          <p className="text-muted-foreground mb-6">
-            Your intelligent coding companion for generation, debugging, and learning
-          </p>
+          <div className="flex items-center justify-between mb-6">
+            <p className="text-muted-foreground">
+              Your intelligent coding companion for generation, debugging, and learning
+            </p>
+            {user && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">AI Mode:</span>
+                <select
+                  value={aiMode}
+                  onChange={(e) => setAiMode(e.target.value as 'developer' | 'tutor' | 'reviewer')}
+                  className="text-sm bg-background border border-border rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <option value="developer">👨‍💻 Developer</option>
+                  <option value="tutor">🎓 Tutor</option>
+                  <option value="reviewer">🧩 Reviewer</option>
+                </select>
+              </div>
+            )}
+          </div>
 
           <Card className="h-[calc(100%-8rem)] flex flex-col border-border/50 bg-card/50 backdrop-blur-sm">
             <CardContent className="flex-1 flex flex-col p-0">

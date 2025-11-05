@@ -6,7 +6,8 @@ const chatSchema = z.object({
   messages: z.array(z.object({
     role: z.enum(['user', 'assistant', 'system']),
     content: z.string().min(1, "Message content cannot be empty").max(10000, "Message content too long (max 10000 characters)")
-  })).min(1, "At least one message required").max(50, "Too many messages (max 50)")
+  })).min(1, "At least one message required").max(50, "Too many messages (max 50)"),
+  mode: z.enum(['developer', 'tutor', 'reviewer']).optional()
 });
 
 const corsHeaders = {
@@ -31,12 +32,18 @@ serve(async (req) => {
       );
     }
     
-    const { messages } = validationResult.data;
+    const { messages, mode = 'developer' } = validationResult.data;
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
+
+    const systemPrompts = {
+      developer: 'You are an expert AI coding assistant. Provide optimized, professional code with best practices. Be concise and technical. Include code examples with clear explanations.',
+      tutor: 'You are a patient AI coding tutor. Explain each concept step-by-step in simple language. Break down complex topics into digestible parts. Use analogies and examples to help understanding. Always encourage learning.',
+      reviewer: 'You are a thorough code reviewer. Analyze code quality, performance, security, and maintainability. Provide specific feedback with suggestions for improvement. Point out both strengths and areas for enhancement.'
+    };
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -49,7 +56,7 @@ serve(async (req) => {
         messages: [
           { 
             role: 'system', 
-            content: 'You are a helpful AI coding assistant. Provide clear, concise answers to programming questions. Include code examples when relevant.'
+            content: systemPrompts[mode]
           },
           ...messages
         ],
