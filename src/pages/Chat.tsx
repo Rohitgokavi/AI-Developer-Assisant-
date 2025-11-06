@@ -11,6 +11,7 @@ import { User } from "@supabase/supabase-js";
 import { UserProfileDropdown } from "@/components/UserProfileDropdown";
 import { useChatHistory, ChatSession } from "@/hooks/useChatHistory";
 import { Textarea } from "@/components/ui/textarea";
+import AIModeSelector from "@/components/AIModeSelector";
 
 type Message = {
   role: "user" | "assistant";
@@ -394,23 +395,12 @@ const Chat = () => {
               )}
             </div>
           </div>
-          <div className="flex items-center justify-between mb-6">
-            <p className="text-muted-foreground">
+          <div className="mb-6">
+            <p className="text-muted-foreground mb-4">
               Your intelligent coding companion for generation, debugging, and learning
             </p>
             {user && (
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">AI Mode:</span>
-                <select
-                  value={aiMode}
-                  onChange={(e) => setAiMode(e.target.value as 'developer' | 'tutor' | 'reviewer')}
-                  className="text-sm bg-background border border-border rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary"
-                >
-                  <option value="developer">👨‍💻 Developer</option>
-                  <option value="tutor">🎓 Tutor</option>
-                  <option value="reviewer">🧩 Reviewer</option>
-                </select>
-              </div>
+              <AIModeSelector mode={aiMode} setMode={setAiMode} />
             )}
           </div>
 
