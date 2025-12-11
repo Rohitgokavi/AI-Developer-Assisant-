@@ -2,6 +2,11 @@ import { Button } from "@/components/ui/button";
 import { Sparkles, Code, Zap } from "lucide-react";
 
 export const Hero = () => {
+  const scrollToGenerator = () => {
+    const element = document.getElementById('code-generator');
+    element?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
     <div className="relative min-h-[60vh] flex items-center justify-center bg-gradient-hero overflow-hidden">
       {/* Animated background elements */}
@@ -30,11 +35,20 @@ export const Hero = () => {
         </p>
 
         <div className="flex flex-wrap gap-4 justify-center animate-slide-up" style={{ animationDelay: "0.2s" }}>
-          <Button size="lg" className="bg-gradient-primary hover:shadow-glow-primary transition-all duration-300 text-background font-semibold">
+          <Button 
+            size="lg" 
+            onClick={scrollToGenerator}
+            className="bg-gradient-primary hover:shadow-glow-primary transition-all duration-300 text-background font-semibold"
+          >
             <Sparkles className="w-5 h-5 mr-2" />
             Start Generating
           </Button>
-          <Button size="lg" variant="outline" className="border-primary/50 hover:bg-primary/10 hover:shadow-glow-primary transition-all duration-300">
+          <Button 
+            size="lg" 
+            variant="outline" 
+            onClick={scrollToGenerator}
+            className="border-primary/50 hover:bg-primary/10 hover:shadow-glow-primary transition-all duration-300"
+          >
             <Zap className="w-5 h-5 mr-2" />
             Learn More
           </Button>
