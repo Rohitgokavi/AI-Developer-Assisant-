@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sparkles, Copy, Download } from "lucide-react";
 import Editor from "@monaco-editor/react";
 import { useToast } from "@/hooks/use-toast";
+import { useCodeHistory } from "@/hooks/useCodeHistory";
 
 const languages = [
   { value: "python", label: "Python" },
@@ -23,6 +24,7 @@ export const CodeGenerator = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const { toast } = useToast();
+  const { saveGeneration } = useCodeHistory();
 
   useEffect(() => {
     if (generatedCode !== "// Your generated code will appear here..." && isTyping) {
@@ -75,6 +77,10 @@ export const CodeGenerator = () => {
       const data = await response.json();
       setGeneratedCode(data.output);
       setIsTyping(true);
+      
+      // Save to history
+      await saveGeneration(prompt, language, data.output);
+      
       toast({
         title: "⚡ Smart Code Generation Complete",
         description: "Your solution is now optimized and ready to use!",

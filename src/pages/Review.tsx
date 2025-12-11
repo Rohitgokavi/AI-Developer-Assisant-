@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertCircle, CheckCircle2, Lightbulb } from "lucide-react";
+import { useCodeHistory } from "@/hooks/useCodeHistory";
 
 const Review = () => {
   const [code, setCode] = useState("");
@@ -13,6 +14,7 @@ const Review = () => {
   const [reviewResult, setReviewResult] = useState("");
   const [displayedText, setDisplayedText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const { saveReview } = useCodeHistory();
 
   useEffect(() => {
     if (reviewResult && isTyping) {
@@ -60,6 +62,9 @@ const Review = () => {
       const data = await response.json();
       setReviewResult(data.review);
       setIsTyping(true);
+      
+      // Save to history
+      await saveReview(code, language, data.review);
     } catch (error) {
       console.error('Review error:', error);
       setReviewResult('Error reviewing code. Please try again.');
