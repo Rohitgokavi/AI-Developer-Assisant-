@@ -41,6 +41,42 @@ export type Database = {
         }
         Relationships: []
       }
+      code_history: {
+        Row: {
+          code: string | null
+          created_at: string
+          id: string
+          language: string
+          prompt: string | null
+          result: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          id?: string
+          language: string
+          prompt?: string | null
+          result?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          id?: string
+          language?: string
+          prompt?: string | null
+          result?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
