@@ -13,7 +13,14 @@ const languages = [
   { value: "typescript", label: "TypeScript" },
   { value: "java", label: "Java" },
   { value: "cpp", label: "C++" },
+  { value: "c", label: "C" },
   { value: "rust", label: "Rust" },
+  { value: "go", label: "Go" },
+  { value: "csharp", label: "C#" },
+  { value: "ruby", label: "Ruby" },
+  { value: "php", label: "PHP" },
+  { value: "swift", label: "Swift" },
+  { value: "kotlin", label: "Kotlin" },
 ];
 
 export const CodeGenerator = () => {

@@ -1,63 +1,49 @@
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-
-interface Sparkle {
-  id: number;
-  x: number;
-  y: number;
-}
+import { motion } from "framer-motion";
 
 export const CursorSparkle = () => {
-  const [sparkles, setSparkles] = useState<Sparkle[]>([]);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    let sparkleId = 0;
-    let lastSparkle = 0;
-
     const handleMouseMove = (e: MouseEvent) => {
       setMousePos({ x: e.clientX, y: e.clientY });
-      
-      const now = Date.now();
-      if (now - lastSparkle > 50) {
-        lastSparkle = now;
-        const newSparkle: Sparkle = {
-          id: sparkleId++,
-          x: e.clientX + (Math.random() - 0.5) * 20,
-          y: e.clientY + (Math.random() - 0.5) * 20,
-        };
-        
-        setSparkles((prev) => [...prev.slice(-8), newSparkle]);
-        
-        setTimeout(() => {
-          setSparkles((prev) => prev.filter((s) => s.id !== newSparkle.id));
-        }, 600);
-      }
+      setIsVisible(true);
+    };
+
+    const handleMouseLeave = () => {
+      setIsVisible(false);
     };
 
     window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseleave", handleMouseLeave);
+    
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseleave", handleMouseLeave);
+    };
   }, []);
 
   return (
     <div className="fixed inset-0 pointer-events-none z-50">
-      <AnimatePresence>
-        {sparkles.map((sparkle) => (
-          <motion.div
-            key={sparkle.id}
-            initial={{ opacity: 0.6, scale: 1 }}
-            animate={{ opacity: 0, scale: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            className="absolute w-1.5 h-1.5 rounded-full bg-primary"
-            style={{
-              left: sparkle.x,
-              top: sparkle.y,
-              boxShadow: "0 0 6px hsl(var(--primary) / 0.5)",
-            }}
-          />
-        ))}
-      </AnimatePresence>
+      {isVisible && (
+        <motion.div
+          className="absolute w-6 h-6 rounded-full border border-primary/40"
+          style={{
+            left: mousePos.x - 12,
+            top: mousePos.y - 12,
+          }}
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.4, 0.2, 0.4],
+          }}
+          transition={{
+            duration: 1.5,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+      )}
     </div>
   );
 };

@@ -364,7 +364,7 @@ const Chat = () => {
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Navigation />
+      <Navigation hideToggle />
       <main className="flex-1 ml-64 p-8 transition-all duration-300">
         <div className="max-w-5xl mx-auto h-[calc(100vh-4rem)]">
           <div className="flex items-center justify-between mb-2">

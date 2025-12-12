@@ -75,7 +75,7 @@ const Review = () => {
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Navigation />
+      <Navigation hideToggle />
       <main className="flex-1 ml-64 p-8 transition-all duration-300">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-4xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent">
@@ -96,9 +96,18 @@ const Review = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="javascript">JavaScript</SelectItem>
+                    <SelectItem value="typescript">TypeScript</SelectItem>
                     <SelectItem value="python">Python</SelectItem>
                     <SelectItem value="java">Java</SelectItem>
                     <SelectItem value="cpp">C++</SelectItem>
+                    <SelectItem value="c">C</SelectItem>
+                    <SelectItem value="rust">Rust</SelectItem>
+                    <SelectItem value="go">Go</SelectItem>
+                    <SelectItem value="csharp">C#</SelectItem>
+                    <SelectItem value="ruby">Ruby</SelectItem>
+                    <SelectItem value="php">PHP</SelectItem>
+                    <SelectItem value="swift">Swift</SelectItem>
+                    <SelectItem value="kotlin">Kotlin</SelectItem>
                   </SelectContent>
                 </Select>
                 <Textarea
