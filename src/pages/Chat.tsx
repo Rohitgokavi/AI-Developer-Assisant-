@@ -385,7 +385,6 @@ const Chat = () => {
                     <History className="w-4 h-4 mr-2" />
                     History
                   </Button>
-                  <UserProfileDropdown user={user} onShowHistory={() => setShowHistory(true)} />
                 </>
               ) : (
                 <Button onClick={handleSignIn} className="bg-gradient-primary">
