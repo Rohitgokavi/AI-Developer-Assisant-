@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sparkles, Copy, Download } from "lucide-react";
+import { Sparkles, Copy, Download, X } from "lucide-react";
 import Editor from "@monaco-editor/react";
 import { useToast } from "@/hooks/use-toast";
 import { useCodeHistory } from "@/hooks/useCodeHistory";
@@ -23,7 +23,11 @@ const languages = [
   { value: "kotlin", label: "Kotlin" },
 ];
 
-export const CodeGenerator = () => {
+interface CodeGeneratorProps {
+  onClose?: () => void;
+}
+
+export const CodeGenerator = ({ onClose }: CodeGeneratorProps) => {
   const [prompt, setPrompt] = useState("");
   const [language, setLanguage] = useState("python");
   const [generatedCode, setGeneratedCode] = useState("// Your generated code will appear here...");
@@ -118,10 +122,17 @@ export const CodeGenerator = () => {
         {/* Input Section */}
         <div className="space-y-4 animate-slide-up">
           <div className="bg-card p-6 rounded-xl border border-border shadow-lg transition-all duration-300 hover:shadow-glow-primary hover:border-primary/50">
-            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-              <Sparkles className="w-6 h-6 text-primary" />
-              Describe Your Code
-            </h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold flex items-center gap-2">
+                <Sparkles className="w-6 h-6 text-primary" />
+                Describe Your Code
+              </h2>
+              {onClose && (
+                <Button variant="ghost" size="icon" onClick={onClose} className="text-muted-foreground hover:text-foreground">
+                  <X className="w-5 h-5" />
+                </Button>
+              )}
+            </div>
             
             <div className="space-y-4">
               <div>
