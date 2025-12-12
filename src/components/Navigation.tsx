@@ -2,6 +2,7 @@ import { Code2, Sparkles, History, MessageSquare, ChevronLeft, ChevronRight } fr
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { AccountSection } from "@/components/AccountSection";
 
 const navItems = [
   { icon: Code2, label: "Code Generator", path: "/" },
@@ -13,9 +14,10 @@ const navItems = [
 interface NavigationProps {
   isMinimized?: boolean;
   onToggle?: () => void;
+  hideToggle?: boolean;
 }
 
-export const Navigation = ({ isMinimized = false, onToggle }: NavigationProps) => {
+export const Navigation = ({ isMinimized = false, onToggle, hideToggle = false }: NavigationProps) => {
   const location = useLocation();
 
   return (
@@ -35,7 +37,7 @@ export const Navigation = ({ isMinimized = false, onToggle }: NavigationProps) =
           )}
           <div className="flex items-center gap-1">
             {!isMinimized && <ThemeToggle />}
-            {onToggle && (
+            {onToggle && !hideToggle && (
               <button
                 onClick={onToggle}
                 className="p-2 rounded-lg hover:bg-sidebar-accent/50 transition-colors text-muted-foreground hover:text-foreground"
@@ -72,13 +74,7 @@ export const Navigation = ({ isMinimized = false, onToggle }: NavigationProps) =
         })}
       </div>
 
-      {!isMinimized && (
-        <div className="pt-4 border-t border-sidebar-border">
-          <p className="text-xs text-muted-foreground text-center">
-            Built with Lovable
-          </p>
-        </div>
-      )}
+      <AccountSection isMinimized={isMinimized} />
     </nav>
   );
 };
