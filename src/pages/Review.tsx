@@ -4,8 +4,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AlertCircle, CheckCircle2, Lightbulb } from "lucide-react";
+import { AlertCircle, CheckCircle2, Lightbulb, X } from "lucide-react";
 import { useCodeHistory } from "@/hooks/useCodeHistory";
+import { useNavigate } from "react-router-dom";
 
 const Review = () => {
   const [code, setCode] = useState("");
@@ -15,6 +16,11 @@ const Review = () => {
   const [displayedText, setDisplayedText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const { saveReview } = useCodeHistory();
+  const navigate = useNavigate();
+
+  const handleClose = () => {
+    navigate("/");
+  };
 
   useEffect(() => {
     if (reviewResult && isTyping) {
@@ -78,9 +84,14 @@ const Review = () => {
       <Navigation hideToggle />
       <main className="flex-1 ml-64 p-8 transition-all duration-300">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-4xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent">
-            Code Review
-          </h1>
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              Code Review
+            </h1>
+            <Button onClick={handleClose} variant="ghost" size="icon">
+              <X className="w-5 h-5" />
+            </Button>
+          </div>
           <p className="text-muted-foreground mb-8">Get AI-powered feedback on your code</p>
 
           <div className="grid gap-6 lg:grid-cols-2">

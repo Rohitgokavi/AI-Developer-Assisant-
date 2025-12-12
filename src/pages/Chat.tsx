@@ -362,6 +362,10 @@ const Chat = () => {
     setIsExplaining(false);
   };
 
+  const handleClose = () => {
+    window.location.href = "/";
+  };
+
   return (
     <div className="flex min-h-screen bg-background">
       <Navigation hideToggle />
@@ -392,6 +396,9 @@ const Chat = () => {
                   Sign in with Google
                 </Button>
               )}
+              <Button onClick={handleClose} variant="ghost" size="icon" className="ml-2">
+                <X className="w-5 h-5" />
+              </Button>
             </div>
           </div>
           <div className="mb-6">

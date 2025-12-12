@@ -2,7 +2,7 @@ import { Navigation } from "@/components/Navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Clock, Code2, FileText, Trash2, Sparkles, BookOpen, Lightbulb } from "lucide-react";
+import { Clock, Code2, FileText, Trash2, Sparkles, BookOpen, Lightbulb, X } from "lucide-react";
 import { useCodeHistory } from "@/hooks/useCodeHistory";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
@@ -10,6 +10,10 @@ import { useNavigate } from "react-router-dom";
 const History = () => {
   const { history, loading, deleteHistoryItem } = useCodeHistory();
   const navigate = useNavigate();
+
+  const handleClose = () => {
+    navigate("/");
+  };
 
   const recommendations = [
     {
@@ -66,9 +70,14 @@ const History = () => {
       <Navigation hideToggle />
       <main className="flex-1 ml-64 p-8 transition-all duration-300">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent">
-            History
-          </h1>
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              History
+            </h1>
+            <Button onClick={handleClose} variant="ghost" size="icon">
+              <X className="w-5 h-5" />
+            </Button>
+          </div>
           <p className="text-muted-foreground mb-8">Your recent code generations and reviews</p>
 
           {history.length > 0 ? (
