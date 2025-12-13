@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AlertCircle, CheckCircle2, Lightbulb, X } from "lucide-react";
+import { AlertCircle, CheckCircle2, Lightbulb } from "lucide-react";
 import { useCodeHistory } from "@/hooks/useCodeHistory";
 import { useNavigate } from "react-router-dom";
 
@@ -15,12 +15,9 @@ const Review = () => {
   const [reviewResult, setReviewResult] = useState("");
   const [displayedText, setDisplayedText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [isNavMinimized, setIsNavMinimized] = useState(true);
   const { saveReview } = useCodeHistory();
   const navigate = useNavigate();
-
-  const handleClose = () => {
-    navigate("/");
-  };
 
   useEffect(() => {
     if (reviewResult && isTyping) {
@@ -81,17 +78,12 @@ const Review = () => {
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Navigation hideToggle />
-      <main className="flex-1 ml-64 p-8 transition-all duration-300">
+      <Navigation isMinimized={isNavMinimized} onToggle={() => setIsNavMinimized(!isNavMinimized)} />
+      <main className={`flex-1 p-8 transition-all duration-300 ${isNavMinimized ? 'ml-16' : 'ml-64'}`}>
         <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-between mb-2">
-            <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              Code Review
-            </h1>
-            <Button onClick={handleClose} variant="ghost" size="icon">
-              <X className="w-5 h-5" />
-            </Button>
-          </div>
+          <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-2">
+            Code Reviewer
+          </h1>
           <p className="text-muted-foreground mb-8">Get AI-powered feedback on your code</p>
 
           <div className="grid gap-6 lg:grid-cols-2">

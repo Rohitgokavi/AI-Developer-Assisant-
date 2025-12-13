@@ -6,9 +6,9 @@ import { AccountSection } from "@/components/AccountSection";
 
 const navItems = [
   { icon: Code2, label: "Code Generator", path: "/" },
-  { icon: Sparkles, label: "Code Review", path: "/review" },
+  { icon: Sparkles, label: "Code Reviewer", path: "/review" },
   { icon: MessageSquare, label: "AI Assistant", path: "/chat" },
-  { icon: History, label: "History", path: "/history" },
+  { icon: History, label: "Code History", path: "/history" },
 ];
 
 interface NavigationProps {
