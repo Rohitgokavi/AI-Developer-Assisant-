@@ -4,11 +4,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Copy, Check, Sparkles, History, X, LogIn, Plus } from "lucide-react";
+import { Send, Copy, Check, Sparkles, History, LogIn, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
-import { UserProfileDropdown } from "@/components/UserProfileDropdown";
 import { useChatHistory, ChatSession } from "@/hooks/useChatHistory";
 import { Textarea } from "@/components/ui/textarea";
 import AIModeSelector from "@/components/AIModeSelector";
@@ -27,6 +26,7 @@ const Chat = () => {
   const [showHistory, setShowHistory] = useState(false);
   const [aiMode, setAiMode] = useState<'developer' | 'tutor' | 'reviewer'>('developer');
   const [isExplaining, setIsExplaining] = useState(false);
+  const [isNavMinimized, setIsNavMinimized] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { history, saveSession, loadSession, deleteSession, newSession } = useChatHistory(user);
 
@@ -362,14 +362,10 @@ const Chat = () => {
     setIsExplaining(false);
   };
 
-  const handleClose = () => {
-    window.location.href = "/";
-  };
-
   return (
     <div className="flex min-h-screen bg-background">
-      <Navigation hideToggle />
-      <main className="flex-1 ml-64 p-8 transition-all duration-300">
+      <Navigation isMinimized={isNavMinimized} onToggle={() => setIsNavMinimized(!isNavMinimized)} />
+      <main className={`flex-1 p-8 transition-all duration-300 ${isNavMinimized ? 'ml-16' : 'ml-64'}`}>
         <div className="max-w-5xl mx-auto h-[calc(100vh-4rem)]">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-3">
@@ -396,9 +392,6 @@ const Chat = () => {
                   Sign in with Google
                 </Button>
               )}
-              <Button onClick={handleClose} variant="ghost" size="icon" className="ml-2">
-                <X className="w-5 h-5" />
-              </Button>
             </div>
           </div>
           <div className="mb-6">

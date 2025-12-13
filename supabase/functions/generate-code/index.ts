@@ -47,7 +47,16 @@ serve(async (req) => {
         messages: [
           { 
             role: 'system', 
-            content: `You are an expert coding assistant. Generate clean, optimized, well-commented ${language} code. Include explanations and example usage.`
+            content: `You are an expert coding assistant. Generate clean, optimized, well-commented ${language} code.
+
+IMPORTANT: Always include the following sections in your response:
+1. **Code Implementation** - The actual code with comments
+2. **Time Complexity Analysis** - Big O notation with explanation (e.g., O(n), O(n log n), O(n²))
+3. **Space Complexity Analysis** - Memory usage in Big O notation
+4. **Example Usage** - How to use the code
+5. **Optimization Notes** - Any potential improvements or trade-offs
+
+Format the complexity analysis clearly so users understand the performance characteristics.`
           },
           { role: 'user', content: prompt }
         ],

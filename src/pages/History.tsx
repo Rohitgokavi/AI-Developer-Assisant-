@@ -1,8 +1,9 @@
 import { Navigation } from "@/components/Navigation";
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Clock, Code2, FileText, Trash2, Sparkles, BookOpen, Lightbulb, X } from "lucide-react";
+import { Clock, Code2, FileText, Trash2, Sparkles, BookOpen, Lightbulb } from "lucide-react";
 import { useCodeHistory } from "@/hooks/useCodeHistory";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
@@ -10,10 +11,7 @@ import { useNavigate } from "react-router-dom";
 const History = () => {
   const { history, loading, deleteHistoryItem } = useCodeHistory();
   const navigate = useNavigate();
-
-  const handleClose = () => {
-    navigate("/");
-  };
+  const [isNavMinimized, setIsNavMinimized] = useState(true);
 
   const recommendations = [
     {
@@ -47,8 +45,8 @@ const History = () => {
   if (loading) {
     return (
       <div className="flex min-h-screen bg-background">
-        <Navigation hideToggle />
-        <main className="flex-1 ml-64 p-8 transition-all duration-300">
+        <Navigation isMinimized={isNavMinimized} onToggle={() => setIsNavMinimized(!isNavMinimized)} />
+        <main className={`flex-1 p-8 transition-all duration-300 ${isNavMinimized ? 'ml-16' : 'ml-64'}`}>
           <div className="max-w-4xl mx-auto">
             <div className="animate-pulse space-y-4">
               <div className="h-10 bg-muted rounded w-48" />
@@ -67,17 +65,12 @@ const History = () => {
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Navigation hideToggle />
-      <main className="flex-1 ml-64 p-8 transition-all duration-300">
+      <Navigation isMinimized={isNavMinimized} onToggle={() => setIsNavMinimized(!isNavMinimized)} />
+      <main className={`flex-1 p-8 transition-all duration-300 ${isNavMinimized ? 'ml-16' : 'ml-64'}`}>
         <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-between mb-2">
-            <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              History
-            </h1>
-            <Button onClick={handleClose} variant="ghost" size="icon">
-              <X className="w-5 h-5" />
-            </Button>
-          </div>
+          <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-2">
+            Code History
+          </h1>
           <p className="text-muted-foreground mb-8">Your recent code generations and reviews</p>
 
           {history.length > 0 ? (
