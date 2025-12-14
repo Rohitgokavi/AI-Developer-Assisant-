@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 
 const Review = () => {
   const [code, setCode] = useState("");
-  const [language, setLanguage] = useState("javascript");
+  const [language, setLanguage] = useState("c");
   const [isReviewing, setIsReviewing] = useState(false);
   const [reviewResult, setReviewResult] = useState("");
   const [displayedText, setDisplayedText] = useState("");

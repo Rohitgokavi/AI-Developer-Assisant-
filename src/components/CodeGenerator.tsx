@@ -29,7 +29,7 @@ interface CodeGeneratorProps {
 
 export const CodeGenerator = ({ onClose }: CodeGeneratorProps) => {
   const [prompt, setPrompt] = useState("");
-  const [language, setLanguage] = useState("python");
+  const [language, setLanguage] = useState("c");
   const [generatedCode, setGeneratedCode] = useState("// Your generated code will appear here...");
   const [displayedCode, setDisplayedCode] = useState("// Your generated code will appear here...");
   const [isGenerating, setIsGenerating] = useState(false);
