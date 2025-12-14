@@ -446,13 +446,19 @@ const Chat = () => {
               </ScrollArea>
               <div className="border-t border-border/50 p-4 bg-card/80 backdrop-blur-sm space-y-3">
                 <div className="flex gap-2">
-                  <Input
+                  <Textarea
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSend();
+                      }
+                    }}
                     placeholder={user ? "Ask me anything about code..." : "Please sign in to chat..."}
                     disabled={isLoading || !user}
-                    className="bg-background/50 border-border/50 focus:border-primary transition-colors"
+                    className="bg-background/50 border-border/50 focus:border-primary transition-colors min-h-[44px] max-h-[120px] resize-none"
+                    rows={1}
                   />
                   <Button 
                     onClick={handleSend} 

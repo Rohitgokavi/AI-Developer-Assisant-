@@ -156,9 +156,16 @@ export const CodeGenerator = ({ onClose }: CodeGeneratorProps) => {
                 <Textarea
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleGenerate();
+                    }
+                  }}
                   placeholder="E.g., Create a function that sorts an array using quicksort algorithm..."
                   className="min-h-[200px] bg-background border-border font-mono text-sm resize-none"
                 />
+                <p className="text-xs text-muted-foreground mt-2">Press Enter to generate • Shift + Enter for new line</p>
               </div>
 
               <Button
