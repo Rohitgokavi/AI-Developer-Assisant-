@@ -116,9 +116,16 @@ const Review = () => {
                 <Textarea
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleReview();
+                    }
+                  }}
                   placeholder="Paste your code here..."
                   className="min-h-[400px] font-mono"
                 />
+                <p className="text-xs text-muted-foreground">Press Enter to review • Shift + Enter for new line</p>
                 <Button onClick={handleReview} disabled={!code || isReviewing} className="w-full">
                   {isReviewing ? "Reviewing..." : "Review Code"}
                 </Button>
