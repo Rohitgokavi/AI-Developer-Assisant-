@@ -7,7 +7,7 @@ interface HeroProps {
 
 export const Hero = ({ onStartClick }: HeroProps) => {
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-gradient-hero overflow-hidden pt-16">
+    <div className="relative min-h-screen flex items-center justify-center bg-gradient-hero overflow-hidden py-24">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/20 rounded-full blur-3xl animate-pulse-glow"></div>

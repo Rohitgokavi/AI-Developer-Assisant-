@@ -3,15 +3,19 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Clock, Code2, FileText, Trash2, Sparkles, BookOpen, Lightbulb } from "lucide-react";
+import { Clock, Code2, FileText, Trash2, Sparkles, BookOpen, Lightbulb, ChevronDown, ChevronUp, Copy } from "lucide-react";
 import { useCodeHistory } from "@/hooks/useCodeHistory";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, format } from "date-fns";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const History = () => {
   const { history, loading, deleteHistoryItem } = useCodeHistory();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [isNavMinimized, setIsNavMinimized] = useState(true);
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
   const recommendations = [
     {
@@ -36,10 +40,34 @@ const History = () => {
 
   const formatTimestamp = (timestamp: string) => {
     try {
-      return formatDistanceToNow(new Date(timestamp), { addSuffix: true });
+      const date = new Date(timestamp);
+      return {
+        relative: formatDistanceToNow(date, { addSuffix: true }),
+        full: format(date, "MMM d, yyyy 'at' h:mm a"),
+      };
     } catch {
-      return "Recently";
+      return { relative: "Recently", full: "Unknown" };
     }
+  };
+
+  const toggleExpand = (id: string) => {
+    setExpandedItems((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast({
+      title: "Copied!",
+      description: "Content copied to clipboard",
+    });
   };
 
   if (loading) {
@@ -77,8 +105,15 @@ const History = () => {
             <div className="space-y-4">
               {history.map((item) => {
                 const Icon = item.type === "generate" ? Code2 : FileText;
+                const isExpanded = expandedItems.has(item.id);
+                const timestamps = formatTimestamp(item.created_at);
+                
                 return (
-                  <Card key={item.id} className="hover:shadow-glow-primary transition-shadow group">
+                  <Card 
+                    key={item.id} 
+                    className="hover:shadow-glow-primary transition-shadow group cursor-pointer"
+                    onClick={() => toggleExpand(item.id)}
+                  >
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
@@ -87,9 +122,12 @@ const History = () => {
                           </div>
                           <div>
                             <CardTitle className="text-lg">{item.title}</CardTitle>
-                            <CardDescription className="flex items-center gap-2 mt-1">
-                              <Clock className="w-3 h-3" />
-                              {formatTimestamp(item.created_at)}
+                            <CardDescription className="flex flex-col gap-1 mt-1">
+                              <span className="flex items-center gap-2">
+                                <Clock className="w-3 h-3" />
+                                {timestamps.relative}
+                              </span>
+                              <span className="text-xs opacity-70">{timestamps.full}</span>
                             </CardDescription>
                           </div>
                         </div>
@@ -99,10 +137,18 @@ const History = () => {
                             variant="ghost"
                             size="icon"
                             className="opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
-                            onClick={() => deleteHistoryItem(item.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteHistoryItem(item.id);
+                            }}
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
+                          {isExpanded ? (
+                            <ChevronUp className="w-5 h-5 text-muted-foreground" />
+                          ) : (
+                            <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                          )}
                         </div>
                       </div>
                     </CardHeader>
@@ -117,6 +163,65 @@ const History = () => {
                         <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
                           {item.prompt}
                         </p>
+                      )}
+                      
+                      {isExpanded && (
+                        <div className="mt-4 space-y-4 border-t pt-4" onClick={(e) => e.stopPropagation()}>
+                          {item.prompt && (
+                            <div>
+                              <div className="flex items-center justify-between mb-2">
+                                <h4 className="text-sm font-semibold">Prompt</h4>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleCopy(item.prompt || "")}
+                                >
+                                  <Copy className="w-3 h-3 mr-1" />
+                                  Copy
+                                </Button>
+                              </div>
+                              <p className="text-sm bg-muted p-3 rounded-lg">{item.prompt}</p>
+                            </div>
+                          )}
+                          
+                          {item.code && (
+                            <div>
+                              <div className="flex items-center justify-between mb-2">
+                                <h4 className="text-sm font-semibold">Code</h4>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleCopy(item.code || "")}
+                                >
+                                  <Copy className="w-3 h-3 mr-1" />
+                                  Copy
+                                </Button>
+                              </div>
+                              <ScrollArea className="h-[200px] w-full rounded-lg border">
+                                <pre className="text-sm bg-muted p-3 font-mono whitespace-pre-wrap">{item.code}</pre>
+                              </ScrollArea>
+                            </div>
+                          )}
+                          
+                          {item.result && (
+                            <div>
+                              <div className="flex items-center justify-between mb-2">
+                                <h4 className="text-sm font-semibold">Result</h4>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleCopy(item.result || "")}
+                                >
+                                  <Copy className="w-3 h-3 mr-1" />
+                                  Copy
+                                </Button>
+                              </div>
+                              <ScrollArea className="h-[300px] w-full rounded-lg border">
+                                <pre className="text-sm bg-muted p-3 font-mono whitespace-pre-wrap">{item.result}</pre>
+                              </ScrollArea>
+                            </div>
+                          )}
+                        </div>
                       )}
                     </CardContent>
                   </Card>
