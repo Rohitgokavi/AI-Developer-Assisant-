@@ -47,11 +47,29 @@ serve(async (req) => {
         messages: [
           { 
             role: 'system', 
-            content: 'You are an expert code reviewer. Analyze code for bugs, security issues, performance problems, and best practices. Provide specific, actionable feedback.'
+            content: `You are an expert ${language} code reviewer. Prioritize brevity with clarity.
+
+RESPONSE RULES:
+- Give the shortest possible feedback that fully addresses issues
+- Avoid repetition and filler
+- Use bullet points (3-7 max per section)
+- Explain only what is necessary
+
+FORMAT:
+## Issues (if any)
+- [CRITICAL/WARNING/INFO] Brief description
+
+## Suggestions
+- Concise actionable improvements
+
+## Summary
+One paragraph assessment (max 50 words)
+
+Keep total response under 300 words.`
           },
           { 
             role: 'user', 
-            content: `Review this ${language} code and provide detailed feedback:\n\n${code}` 
+            content: `Review this ${language} code:\n\n${code}` 
           }
         ],
       }),
